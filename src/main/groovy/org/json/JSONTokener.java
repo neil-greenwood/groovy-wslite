@@ -36,16 +36,16 @@ SOFTWARE.
  * it. It is used by the JSONObject and JSONArray constructors to parse
  * JSON source strings.
  * @author JSON.org
- * @version 2011-11-24
+ * @version 2012-02-16
  */
 public class JSONTokener {
 
-    private int 	character;
-	private boolean eof;
-    private int 	index;
-    private int 	line;
-    private char 	previous;
-    private final Reader 	reader;
+    private long    character;
+    private boolean eof;
+    private long    index;
+    private long    line;
+    private char    previous;
+    private Reader  reader;
     private boolean usePrevious;
 
 
@@ -121,7 +121,7 @@ public class JSONTokener {
     }
 
     public boolean end() {
-    	return this.eof && !this.usePrevious;
+        return this.eof && !this.usePrevious;
     }
 
 
@@ -148,31 +148,31 @@ public class JSONTokener {
     public char next() throws JSONException {
         int c;
         if (this.usePrevious) {
-        	this.usePrevious = false;
+            this.usePrevious = false;
             c = this.previous;
         } else {
-	        try {
-	            c = this.reader.read();
-	        } catch (IOException exception) {
-	            throw new JSONException(exception);
-	        }
+            try {
+                c = this.reader.read();
+            } catch (IOException exception) {
+                throw new JSONException(exception);
+            }
 
-	        if (c <= 0) { // End of stream
-	        	this.eof = true;
-	        	c = 0;
-	        }
+            if (c <= 0) { // End of stream
+                this.eof = true;
+                c = 0;
+            }
         }
-    	this.index += 1;
-    	if (this.previous == '\r') {
-    		this.line += 1;
-    		this.character = c == '\n' ? 0 : 1;
-    	} else if (c == '\n') {
-    		this.line += 1;
-    		this.character = 0;
-    	} else {
-    		this.character += 1;
-    	}
-    	this.previous = (char) c;
+        this.index += 1;
+        if (this.previous == '\r') {
+            this.line += 1;
+            this.character = c == '\n' ? 0 : 1;
+        } else if (c == '\n') {
+            this.line += 1;
+            this.character = 0;
+        } else {
+            this.character += 1;
+        }
+        this.previous = (char) c;
         return this.previous;
     }
 
@@ -283,8 +283,8 @@ public class JSONTokener {
                 case '\'':
                 case '\\':
                 case '/':
-                	sb.append(c);
-                	break;
+                    sb.append(c);
+                    break;
                 default:
                     throw this.syntaxError("Illegal escape.");
                 }
@@ -383,7 +383,7 @@ public class JSONTokener {
         this.back();
 
         string = sb.toString().trim();
-        if (string.equals("")) {
+        if ("".equals(string)) {
             throw this.syntaxError("Missing value");
         }
         return JSONObject.stringToValue(string);
@@ -400,10 +400,10 @@ public class JSONTokener {
     public char skipTo(char to) throws JSONException {
         char c;
         try {
-            int startIndex = this.index;
-            int startCharacter = this.character;
-            int startLine = this.line;
-            this.reader.mark(Integer.MAX_VALUE);
+            long startIndex = this.index;
+            long startCharacter = this.character;
+            long startLine = this.line;
+            this.reader.mark(1000000);
             do {
                 c = this.next();
                 if (c == 0) {
@@ -441,6 +441,6 @@ public class JSONTokener {
      */
     public String toString() {
         return " at " + this.index + " [character " + this.character + " line " +
-        	this.line + "]";
+            this.line + "]";
     }
 }
