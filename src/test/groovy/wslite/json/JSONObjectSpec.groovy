@@ -114,4 +114,91 @@ class JSONObjectSpec extends Specification {
         !(JSONObject.NULL == null)
     }
 
+    void 'size'() {
+        when:
+        def result1 = new JSONObject([foo: 'bar'])
+        def result2 = new JSONObject([foo: 'bar', baz: 'buzz'])
+
+        then:
+        result1.size() == 1
+        result2.size() == 2
+    }
+
+    void 'contains key'() {
+        given:
+        def someMap = [foo: 'bar', baz: 'buzz']
+        def baz = 'baz'
+
+        when:
+        def result = new JSONObject(someMap)
+
+        then:
+        result.containsKey('foo')
+        result.containsKey("${baz}")
+        !result.containsKey(null)
+    }
+
+    void 'contains value'() {
+        given:
+        def someMap = [foo: 'bar', baz: null, buzz: 7]
+        def bar = 'bar'
+
+        when:
+        def result = new JSONObject(someMap)
+
+        then:
+        !result.containsValue(null)
+        result.containsValue('bar')
+        result.containsValue("${bar}")
+        result.containsValue(7)
+        !result.containsValue('foo')
+    }
+
+    void 'put all'() {
+        given:
+        def map = [foo: 'bar', baz: 'baz']
+
+        when:
+        def result = new JSONObject()
+        result.putAll(map)
+
+        then:
+        result.size() == 2
+        result['foo'] == 'bar'
+    }
+
+    void 'clear'() {
+        when:
+        def result = new JSONObject([foo: 'bar'])
+        result.clear()
+
+        then:
+        result.size() == 0
+        result.isEmpty()
+    }
+
+    void 'nested json objects'() {
+        given:
+        def json = '''{"foo":"bar","baz":{"buzz":"bing", "one":"two"}}'''
+        def four = "four"
+        def five = "five"
+        def map = [foo: 'bar', baz: [buzz: 'bing', one: 'two', three: "${four}", "${five}": "six"]]
+
+        when:
+        def result = new JSONObject(json)
+        def resultMap = new JSONObject(map)
+
+        then:
+        result.baz instanceof wslite.json.JSONObject
+
+        'bing' == result.baz.buzz
+        'two' == result.baz.one
+
+        'bing' == resultMap.baz.buzz
+        'two' == resultMap.baz.one
+
+        'four' == resultMap.baz.three
+        'six' == resultMap.baz.five
+    }
+
 }

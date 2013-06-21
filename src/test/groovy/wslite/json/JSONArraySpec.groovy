@@ -18,9 +18,9 @@ import spock.lang.*
 
 class JSONArraySpec extends Specification {
 
-    void 'should be a List'() {
+    void 'should be a Collection'() {
         expect:
-        new JSONArray() instanceof List
+        new JSONArray() instanceof Collection
     }
 
     void 'should answer to the Groovy truth'() {
