@@ -1,6 +1,5 @@
 package wslite.json;
 
-import org.json.*;
 import org.json.JSONException;
 
 import java.util.ArrayList;
@@ -8,16 +7,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-class JSONArray implements Collection {
+public class JSONArray implements Collection {
 
     private org.json.JSONArray wrapped;
 
     public JSONArray() {
         wrapped = new org.json.JSONArray();
-    }
-
-    public JSONArray(JSONTokener x) {
-        wrapped = new org.json.JSONArray(x);
     }
 
     public JSONArray(String source) throws org.json.JSONException {
@@ -32,6 +27,10 @@ class JSONArray implements Collection {
         wrapped = new org.json.JSONArray(array);
     }
 
+    public JSONArray(org.json.JSONArray jsonArray) {
+        wrapped = jsonArray;
+    }
+
     public int size() {
         return wrapped.length();
     }
@@ -41,27 +40,43 @@ class JSONArray implements Collection {
     }
 
     public boolean contains(Object o) {
-        for (int i = 0; i < wrapped.length(); i++) {
-            Object v = wrapped.opt(i);
-            if (o == null) {
-                if (v == null) {
-                    return true;
-                }
-            } else {
-                if (o.equals(v)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return toList().contains(wrap(o));
     }
 
     public Iterator iterator() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return toList().iterator();
     }
 
     public Object[] toArray() {
-        return new Object[0];  //To change body of implemented methods use File | Settings | File Templates.
+        return toList().toArray();
+    }
+
+    private List toList() {
+        List list = new ArrayList(size());
+        for (int i = 0; i < size(); i++) {
+            list.add(getAt(i));
+        }
+        return list;
+    }
+
+    private int indexOf(Object o, int start) {
+        int len = size();
+        if (start >= len) {
+            return -1;
+        }
+        for (int i = start; i < len; i++) {
+            Object v = getAt(i);
+            if (v == null && o == null) {
+                return i;
+            }
+            if (!(v != null && o != null)) {
+                continue;
+            }
+            if (wrap(v).equals(wrap(o))) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public boolean add(Object o) {
@@ -69,33 +84,78 @@ class JSONArray implements Collection {
     }
 
     public boolean remove(Object o) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        boolean found = false;
+        int index = -1;
+        List<Integer> indexes = new ArrayList<Integer>();
+        while ((index = indexOf(o, index + 1)) != -1) {
+            indexes.add(index);
+            found = true;
+        }
+        for (int i = indexes.size() - 1; i >= 0; i--) {
+            wrapped.remove(indexes.get(i).intValue());
+        }
+        return found;
     }
 
     public boolean containsAll(Collection c) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return toList().containsAll(c);
     }
 
     public boolean addAll(Collection c) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (c == null) {
+            return false;
+        }
+        for (Object o : c) {
+            wrapped.put(o);
+        }
+        return true;
     }
 
     public boolean removeAll(Collection c) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (c == null) {
+            return true;
+        }
+        boolean allRemoved = true;
+        for (Object o : c) {
+            if (!remove(o)) {
+                allRemoved = false;
+            }
+        }
+        return allRemoved;
     }
 
     public boolean retainAll(Collection c) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (c == null) {
+            clear();
+            return true;
+        }
+        boolean found = false;
+        Object[] array = toArray();
+        List<Integer> indexes = new ArrayList();
+        for (int i = 0; i < array.length; i++) {
+            Object o = getAt(i);
+            if (!c.contains(o)) {
+                indexes.add(i);
+                found = true;
+            }
+        }
+        for (Integer o : indexes) {
+            wrapped.remove(o.intValue());
+        }
+        return found;
     }
 
     public void clear() {
-        for (int i = 0; i < wrapped.length(); i++) {
+        if (isEmpty()) {
+            return;
+        }
+        for (int i = (size() - 1); i >= 0; i--) {
             wrapped.remove(i);
         }
     }
 
     public Object[] toArray(Object[] a) {
-        return new Object[0];  //To change body of implemented methods use File | Settings | File Templates.
+        return toList().toArray(a);
     }
 
     public Object getAt(int i) {
@@ -103,6 +163,12 @@ class JSONArray implements Collection {
     }
 
     static Object wrap(Object o) {
+        if (o instanceof wslite.json.JSONArray) {
+            return o;
+        }
+        if (o instanceof wslite.json.JSONObject) {
+            return o;
+        }
         if (o instanceof CharSequence) {
             return o.toString();
         }
@@ -110,7 +176,10 @@ class JSONArray implements Collection {
             return wrap((Collection) o);
         }
         if (o instanceof org.json.JSONArray) {
-            return new org.json.JSONArray((org.json.JSONArray) o);
+            return new wslite.json.JSONArray((org.json.JSONArray) o);
+        }
+        if (o instanceof org.json.JSONObject) {
+            return new wslite.json.JSONObject((org.json.JSONObject) o);
         }
         return o;
     }

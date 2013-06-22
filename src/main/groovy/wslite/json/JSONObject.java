@@ -40,24 +40,12 @@ public class JSONObject implements Map<String, Object> {
         wrapped = jo;
     }
 
-    public JSONObject(JSONObject jo, String[] names) {
-        wrapped = new org.json.JSONObject(jo, names);
-    }
-
-    public JSONObject(JSONTokener x) throws org.json.JSONException {
-        wrapped = new org.json.JSONObject(x);
-    }
-
     public JSONObject(Map map) {
         wrapped = new org.json.JSONObject(wrapMap(map));
     }
 
     public JSONObject(Object bean) {
         wrapped = new org.json.JSONObject(wrap(bean));
-    }
-
-    public JSONObject(Object object, String names[]) {
-        wrapped = new org.json.JSONObject(wrap(object), names);
     }
 
     public JSONObject(String source) throws JSONException {
@@ -115,11 +103,7 @@ public class JSONObject implements Map<String, Object> {
             throw new NullPointerException("Null keys are not allowed.");
         }
         Object o = get(key);
-        try {
-            wrapped.put(key.toString(), wrap(value));
-        } catch (JSONException je) {
-            throw new IllegalArgumentException(je);
-        }
+        wrapped.put(key.toString(), wrap(value));
         return o;
     }
 
@@ -151,13 +135,19 @@ public class JSONObject implements Map<String, Object> {
         Set<Entry<String, Object>> entrySet = new HashSet<Entry<String, Object>>(wrapped.length());
         for (Object key : wrapped.keySet()) {
             Object value = wrapped.get(key.toString());
-            Map.Entry entry = new AbstractMap.SimpleImmutableEntry<String, Object>(key.toString(), wrap(value));
+            Map.Entry entry = new JSONEntry(key.toString(), value);
             entrySet.add(entry);
         }
         return entrySet;
     }
 
     static Object wrap(Object o) {
+        if (o instanceof wslite.json.JSONArray) {
+            return o;
+        }
+        if (o instanceof wslite.json.JSONObject) {
+            return o;
+        }
         if (o instanceof CharSequence) {
             return (o != null) ? o.toString() : null;
         }
@@ -169,6 +159,9 @@ public class JSONObject implements Map<String, Object> {
         }
         if (o != null && o == org.json.JSONObject.NULL) {
             return NULL;
+        }
+        if (o instanceof org.json.JSONArray) {
+            return new wslite.json.JSONArray((org.json.JSONArray) o);
         }
         return o;
     }
@@ -211,4 +204,27 @@ public class JSONObject implements Map<String, Object> {
         return wrapped.hashCode();
     }
 
+    private class JSONEntry implements Entry {
+
+        private final Object key;
+        private Object value;
+
+        private JSONEntry(Object key, Object value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public Object getKey() {
+            return key;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        public Object setValue(Object value) {
+            this.value = value;
+            return put(key.toString(), wrap(value));
+        }
+    }
 }

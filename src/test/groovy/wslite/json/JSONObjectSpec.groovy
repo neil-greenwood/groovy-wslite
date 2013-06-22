@@ -201,4 +201,13 @@ class JSONObjectSpec extends Specification {
         'six' == resultMap.baz.five
     }
 
+    void 'properly wraps embedded json objects'() {
+        when:
+        def result = new JSONObject([foo: 'bar', list: [1,2]])
+
+        then:
+        result.list instanceof wslite.json.JSONArray
+        2 == result.list[1]
+    }
+
 }
