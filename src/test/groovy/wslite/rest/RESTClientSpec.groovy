@@ -1,4 +1,4 @@
-/* Copyright 2011 the original author or authors.
+/* Copyright 2011-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package wslite.rest
 
 import spock.lang.*
 import wslite.http.*
-import wslite.json.*
 
 class RESTClientSpec extends Specification {
 
@@ -92,7 +91,6 @@ class RESTClientSpec extends Specification {
 
         expect:
         response.json.foo == foo
-        assert response.json instanceof JSONObject
 
         where:
         contentType                 | foo
@@ -111,7 +109,6 @@ class RESTClientSpec extends Specification {
         response.json[0].foo == foo0
         response.json[1].foo == foo1
         assert response.json.size() == 2
-        assert response.json instanceof JSONArray
 
         where:
         contentType                 | foo0      | foo1
@@ -327,6 +324,22 @@ class RESTClientSpec extends Specification {
         ex.response != null
         ex.response.contentType == 'text/xml'
         ex.response.contentAsString == '<foo><name></foo>'
+    }
+
+    void 'http patch method using method override'() {
+        when:
+        def response = client.patch()
+
+        then:
+        HTTPMethod.PATCH == client.httpClient.request.headers[HTTP.X_HTTP_METHOD_OVERRIDE_HEADER]
+    }
+
+    void 'http head method'() {
+        when:
+        def response = client.head()
+
+        then:
+        HTTPMethod.HEAD == client.httpClient.request.method
     }
 
     private getMockResponse(headers=[:], data=null) {

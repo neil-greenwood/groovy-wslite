@@ -5,17 +5,35 @@ Library for Groovy that provides no-frills SOAP and REST webservice clients.
 This library assumes you know exactly what messages you want to send to your services and want full control over the
 request.  No streams are used and all request/responses are buffered in memory for convenience.
 
+# Versions
+
 **Note**
 
 Please consult the [Changelog] (https://github.com/jwagenleitner/groovy-wslite/blob/master/CHANGELOG.md) for any
 breaking changes.
+
+## 1.0
+
+* JDK 1.5 or higher
+* Requires [Groovy 1.7.6] (http://groovy.codehaus.org) or higher
+
+## 2.0 (beta)
+
+* JDK 1.7 or higher
+* Requires [Groovy 2.3] (http://groovy.codehaus.org) or higher
+* Plans
+    * Use Groovy's built-in JSON parsing
+    * Support for HEAD and PATCH verbs
+    * Make use of `@CompileStatic` where appropriate
+    * Make API more extensible
+    * Clean up connection handling
 
 ## SOAP
 
 ### Example
 
 ``` groovy
-@Grab(group='com.github.groovy-wslite', module='groovy-wslite', version='0.8.0')
+@Grab(group='com.github.groovy-wslite', module='groovy-wslite', version='1.1.0')
 import wslite.soap.*
 
 def client = new SOAPClient('http://www.holidaywebservice.com/Holidays/US/Dates/USHolidayDates.asmx')
@@ -257,7 +275,7 @@ In decreasing precedence, groovy-wslite picks the proxy settings from:
 ### Example
 
 ``` groovy
-@Grab(group='com.github.groovy-wslite', module='groovy-wslite', version='0.8.0')
+@Grab(group='com.github.groovy-wslite', module='groovy-wslite', version='1.1.0')
 import wslite.rest.*
 
 def client = new RESTClient("http://api.twitter.com/1/")
@@ -441,7 +459,7 @@ For all text based responses (content type starts with "text/") there will be a 
 
 For xml based responses, an *xml* (i.e., `response.xml`) property is available that is of type *GPathResult*.
 
-For json based responses, a *json* (i.e., `response.json`) property is available that is of type *JSONObject* or *JSONArray*.
+For json based responses, a *json* (i.e., `response.json`) property is available that is of type returned from `groovy.json.JsonSlurper`.
 
 ## Proxies
 
@@ -505,7 +523,7 @@ __groovy-wslite__ is available in Maven Central.
     <dependency>
         <groupId>com.github.groovy-wslite</groupId>
         <artifactId>groovy-wslite</artifactId>
-        <version>0.8.0</version>
+        <version>1.1.0</version>
     </dependency>
 
 #### Snapshots
@@ -521,7 +539,7 @@ __groovy-wslite__ is available in Maven Central.
         <dependency>
             <groupId>com.github.groovy-wslite</groupId>
             <artifactId>groovy-wslite</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>2.0.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
@@ -529,12 +547,12 @@ __groovy-wslite__ is available in Maven Central.
 
 #### Releases
 
-    @Grab(group='com.github.groovy-wslite', module='groovy-wslite', version='0.8.0')
+    @Grab(group='com.github.groovy-wslite', module='groovy-wslite', version='1.1.0')
 
 #### Snapshots
 
     @GrabResolver(name='groovy-wslite', root='https://oss.sonatype.org/content/groups/public', m2Compatible=true)
-    @Grab(group='com.github.groovy-wslite', module='groovy-wslite', version='1.0.0-SNAPSHOT', changing=true)
+    @Grab(group='com.github.groovy-wslite', module='groovy-wslite', version='2.0.0-SNAPSHOT', changing=true)
 
 ## Using with Grails
 
@@ -555,7 +573,7 @@ The SOAP/RESTClients can easily be configured and used in your Grails applicatio
             //mavenRepo "https://oss.sonatype.org/content/groups/public"
         }
         dependencies {
-            runtime 'com.github.groovy-wslite:groovy-wslite:0.8.0'
+            runtime 'com.github.groovy-wslite:groovy-wslite:1.1.0'
         }
     }
 
@@ -616,10 +634,6 @@ class MyService {
 ## Versioning
 
 This project uses [Semantic Versioning] (http://semver.org/).
-
-## Dependencies
-
-* [Groovy 1.7.6] (http://groovy.codehaus.org) or higher
 
 ## Building
 

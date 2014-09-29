@@ -1,4 +1,4 @@
-/* Copyright 2012 the original author or authors.
+/* Copyright 2012-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,13 @@
  */
 package wslite.rest
 
+import groovy.json.JsonSlurper
 import wslite.http.ContentTypeHeader
 import wslite.http.HTTPRequest
 import wslite.http.HTTPResponse
-import wslite.json.JSONArray
-import wslite.json.JSONObject
+
+import javax.xml.parsers.SAXParserFactory
+import groovy.xml.FactorySupport;
 
 class ResponseBuilder {
 
@@ -55,11 +57,14 @@ class ResponseBuilder {
     }
 
     private parseXmlContent(String content) {
-        return new XmlSlurper().parseText(content)
+        SAXParserFactory factory = FactorySupport.createSaxParserFactory();
+        factory.setNamespaceAware(true);
+        factory.setValidating(false);
+        return new XmlSlurper(factory.newSAXParser()).parseText(content)
     }
 
     private parseJsonContent(String content) {
-        return content.trim().startsWith('[') ? new JSONArray(content) : new JSONObject(content)
+        return new JsonSlurper().parseText(content)
     }
 
     private String contentTypeNoParameter(HTTPResponse httpResponse) {
